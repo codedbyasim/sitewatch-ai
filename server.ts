@@ -3,10 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { OpenAI } from "openai";
 import dotenv from "dotenv";
-// @ts-ignore
-import * as pdfModule from "pdf-parse";
-// @ts-ignore
-const pdf = pdfModule.default || pdfModule;
+import { PDFParse } from "pdf-parse";
 
 dotenv.config();
 
@@ -39,10 +36,12 @@ async function startServer() {
       if (!pdfBase64) return res.status(400).json({ error: "No PDF data provided" });
 
       const buffer = Buffer.from(pdfBase64.split(",")[1] || pdfBase64, "base64");
-      // @ts-ignore
-      const data = await pdf(buffer);
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      const text = result.text;
+      await parser.destroy();
       
-      res.json({ text: data.text });
+      res.json({ text });
     } catch (error: any) {
       console.error("PDF Parsing Error:", error);
       res.status(500).json({ error: error.message });
