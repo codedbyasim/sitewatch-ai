@@ -1,7 +1,18 @@
 import express from "express";
 import { OpenAI } from "openai";
-import pdf from "pdf-parse";
 import dotenv from "dotenv";
+import { createRequire } from "module";
+
+const customRequire = typeof require !== "undefined"
+  ? require
+  : createRequire(import.meta.url);
+
+if (!(global as any).module) {
+  (global as any).module = { parent: {} };
+} else {
+  (global as any).module.parent = {};
+}
+const pdf = customRequire("pdf-parse");
 
 dotenv.config();
 

@@ -3,7 +3,18 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { OpenAI } from "openai";
 import dotenv from "dotenv";
-import pdf from "pdf-parse";
+import { createRequire } from "module";
+
+const customRequire = typeof require !== "undefined"
+  ? require
+  : createRequire(import.meta.url);
+
+if (!(global as any).module) {
+  (global as any).module = { parent: {} };
+} else {
+  (global as any).module.parent = {};
+}
+const pdf = customRequire("pdf-parse");
 
 
 
