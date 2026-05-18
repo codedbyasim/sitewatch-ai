@@ -176,7 +176,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-8 space-y-3">
-              {visionResults?.violations.slice(0, 3).map((v, i) => (
+              {visionResults?.violations?.slice(0, 3)?.map((v, i) => (
                 <div key={i} className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
                   <div className="flex items-center gap-2">
                     <AlertTriangle size={12} className="text-amber-500" />
@@ -215,7 +215,7 @@ export default function Dashboard() {
               <div className="flex flex-col">
                 <span className="text-xs text-foreground/40 uppercase tracking-widest mb-1">Risk Status</span>
                 <span className={cn("text-lg font-bold", 
-                  (riskResults?.risk_status?.toLowerCase().includes("delay") || riskResults?.risk_status?.toLowerCase().includes("risk") || delayProb > 50) 
+                  (riskResults?.risk_status?.toLowerCase()?.includes("delay") || riskResults?.risk_status?.toLowerCase()?.includes("risk") || delayProb > 50) 
                     ? "text-red-500" 
                     : "text-green-500"
                 )}>

@@ -1,18 +1,7 @@
 import express from "express";
 import { OpenAI } from "openai";
+import { PDFParse } from "pdf-parse";
 import dotenv from "dotenv";
-import { createRequire } from "module";
-
-const customRequire = typeof require !== "undefined"
-  ? require
-  : createRequire(import.meta.url);
-
-if (!(global as any).module) {
-  (global as any).module = { parent: {} };
-} else {
-  (global as any).module.parent = {};
-}
-const pdf = customRequire("pdf-parse");
 
 dotenv.config();
 
@@ -37,9 +26,10 @@ app.post("/api/parse-pdf", async (req, res) => {
     if (!pdfBase64) return res.status(400).json({ error: "No PDF data provided" });
 
     const buffer = Buffer.from(pdfBase64.split(",")[1] || pdfBase64, "base64");
-    const parsePdf = typeof pdf === "function" ? pdf : (pdf as any).default;
-    const result = await parsePdf(buffer);
+    const parser = new PDFParse({ data: buffer });
+    const result = await parser.getText();
     const text = result.text;
+    await parser.destroy();
     
     res.json({ text });
   } catch (error: any) {

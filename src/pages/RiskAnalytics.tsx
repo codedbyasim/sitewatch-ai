@@ -129,7 +129,7 @@ export default function RiskAnalytics() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {riskResults.top_risks.map((risk, i) => {
+            {riskResults.top_risks?.map((risk, i) => {
               const severity = typeof risk === "string" ? (i === 0 ? "HIGH" : "MEDIUM") : risk.severity;
               const factor = typeof risk === "string" ? risk : risk.factor;
               const prob = typeof risk === "string" ? `${riskResults.delay_probability}%` : `${risk.probability}%`;
@@ -157,7 +157,7 @@ export default function RiskAnalytics() {
             <h2 className="text-2xl font-black uppercase tracking-tight italic">AI Mitigation Engines</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {riskResults.recommended_actions.map((action, i) => (
+            {riskResults.recommended_actions?.map((action, i) => (
               <div key={i} className="space-y-2">
                 <h4 className="font-bold border-b border-white/20 pb-2">Strategem #{i+1}</h4>
                 <p className="text-sm text-white/70">{action}</p>

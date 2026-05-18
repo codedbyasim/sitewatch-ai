@@ -342,7 +342,7 @@ export default function UploadCenter() {
                       <div className="space-y-4">
                         <p className="text-sm font-medium leading-relaxed opacity-80">{f.analysis.summary}</p>
                         <div className="space-y-2">
-                           {f.analysis.violations.map((v: any, i: number) => (
+                           {f.analysis.violations?.map((v: any, i: number) => (
                              <div key={i} className="flex gap-3 text-[11px] p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500">
                                <AlertCircle size={14} className="shrink-0 mt-0.5" />
                                <div>
@@ -357,19 +357,19 @@ export default function UploadCenter() {
                       // Risk Result
                       <div className="space-y-4">
                         <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-primary">{f.analysis.delay_probability}%</span>
+                          <span className="text-3xl font-black text-primary">{f.analysis.delay_probability || 0}%</span>
                           <span className="text-[10px] uppercase font-bold text-foreground/40">Delay Risk</span>
                         </div>
                         <div className="space-y-2">
-                          {f.analysis.top_risks.slice(0, 2).map((r: string, i: number) => (
-                             <div key={i} className="flex items-center gap-2 text-xs p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
-                               <Shield size={12} /> {r}
+                          {f.analysis.top_risks?.slice(0, 2)?.map((r: any, i: number) => (
+                             <div key={i} className="flex items-center gap-2 text-xs p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 truncate">
+                               <Shield size={12} className="shrink-0" /> {typeof r === "string" ? r : r.factor}
                              </div>
                           ))}
                         </div>
                         <div className="pt-4 border-t border-white/5">
                            <p className="text-[10px] uppercase font-bold text-foreground/40 mb-2">Recommended Action</p>
-                           <p className="text-xs italic opacity-70">"{f.analysis.recommended_actions[0]}"</p>
+                           <p className="text-xs italic opacity-70">"{f.analysis.recommended_actions?.[0] || "Maintain current protocols"}"</p>
                         </div>
                       </div>
                     )}

@@ -138,7 +138,8 @@ export default function ReportsPage() {
     if (riskResults?.top_risks && riskResults.top_risks.length > 0) {
       riskResults.top_risks.forEach((risk, idx) => {
         if (yPos > 270) { doc.addPage(); yPos = 20; }
-        const riskLines = doc.splitTextToSize(`- ${risk}`, 174);
+        const riskText = typeof risk === "string" ? risk : risk.factor;
+        const riskLines = doc.splitTextToSize(`- ${riskText}`, 174);
         doc.text(riskLines, 18, yPos);
         yPos += riskLines.length * 4.5;
       });
@@ -359,7 +360,7 @@ export default function ReportsPage() {
                   riskResults.top_risks.map((risk, i) => (
                     <div key={i} className="flex items-start gap-2.5 text-xs text-foreground/80 leading-relaxed font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                      <span>{risk}</span>
+                      <span>{typeof risk === "string" ? risk : risk.factor}</span>
                     </div>
                   ))
                 ) : (
