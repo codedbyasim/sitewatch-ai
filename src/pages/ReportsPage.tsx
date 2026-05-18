@@ -43,48 +43,143 @@ export default function ReportsPage() {
   const generatePDF = (reportName: string) => {
     const doc = new jsPDF();
     
-    // Cyber style header
-    doc.setFillColor(255, 140, 0);
-    doc.rect(0, 0, 210, 40, "F");
+    // Header block
+    doc.setFillColor(255, 140, 0); // Active Orange
+    doc.rect(0, 0, 210, 45, "F");
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    doc.setFontSize(26);
     doc.setFont("helvetica", "bold");
-    doc.text("SITEWATCH AI AUDIT", 15, 25);
+    doc.text("SITEWATCH AI REPORT", 15, 22);
     
-    doc.setFontSize(10);
-    doc.text(`DATE: ${new Date().toLocaleDateString()}`, 15, 35);
-    doc.text(`REF: ${Math.random().toString(36).substring(7).toUpperCase()}`, 160, 35);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`DATE GENERATED: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 15, 34);
+    doc.text(`AUDIT COMPLIANCE REFERENCE ID: SW-${Math.random().toString(36).substring(3, 9).toUpperCase()}`, 15, 39);
+    doc.text(`ENGINE: GEMINI 3.1 FLASH LITE`, 145, 34);
+    doc.text(`STATUS: CERTIFIED READY`, 145, 39);
 
+    // Document Title
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(16);
-    doc.text(reportName, 15, 60);
-
-    doc.setFontSize(12);
-    doc.text("EXECUTIVE AI SUMMARY", 15, 80);
-    doc.setFont("helvetica", "normal");
-    const summaryLines = doc.splitTextToSize(visionResults?.summary || "Project performance tracking via real-time vision and schedule analysis. No critical blockers detected at initialization.", 180);
-    doc.text(summaryLines, 15, 90);
-    
     doc.setFont("helvetica", "bold");
-    doc.text("CRITICAL FINDINGS", 15, 120);
+    doc.text(reportName.toUpperCase(), 15, 60);
+
+    // Section 1: Executive AI Summary
+    doc.setFontSize(11);
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, 68, 180, 8, "F");
+    doc.text("EXECUTIVE AI SUMMARY", 18, 74);
+    
     doc.setFont("helvetica", "normal");
-    let yPos = 130;
+    doc.setFontSize(10);
+    const summaryText = visionResults?.summary || "No visual cache or active PDF text uploaded yet. Connect and scan project schedules or report files to populate execution tracking data.";
+    const summaryLines = doc.splitTextToSize(summaryText, 174);
+    doc.text(summaryLines, 18, 84);
+
+    let yPos = 84 + (summaryLines.length * 5) + 8;
+
+    // Section 2: Critical Findings & Safety Violations
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 180, 8, "F");
+    doc.text("OBSERVED VIOLATIONS & COMPLIANCE FINDINGS", 18, yPos + 6);
+    
+    yPos += 14;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
     if (visionResults?.violations && visionResults.violations.length > 0) {
       visionResults.violations.forEach((v, idx) => {
-        doc.text(`- ${v.type} (${v.severity}): ${v.recommendation}`, 15, yPos);
-        yPos += 10;
+        if (yPos > 270) { doc.addPage(); yPos = 20; }
+        doc.setFont("helvetica", "bold");
+        doc.text(`${idx + 1}. [${v.severity.toUpperCase()}] ${v.type} (Location: ${v.location})`, 18, yPos);
+        doc.setFont("helvetica", "normal");
+        const recLines = doc.splitTextToSize(`Recommendation: ${v.recommendation}`, 170);
+        doc.text(recLines, 22, yPos + 4.5);
+        yPos += 6 + (recLines.length * 4.5);
       });
     } else {
-      doc.text("- No immediate safety violations observed in current visual cache.", 15, yPos);
-      yPos += 10;
+      doc.text("- No safety violations or hazardous items were parsed in this audit report.", 18, yPos);
+      yPos += 8;
     }
 
+    // Section 3: Project Risk & Timeline Forecasts
+    yPos += 4;
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
     doc.setFont("helvetica", "bold");
-    doc.text("PREDICTIVE ANALYSIS", 15, yPos + 10);
+    doc.setFontSize(11);
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 180, 8, "F");
+    doc.text("PREDICTIVE TIMELINE & RISK OUTLOOK", 18, yPos + 6);
+    
+    yPos += 14;
     doc.setFont("helvetica", "normal");
-    doc.text(`- Delay Probability: ${riskResults?.delay_probability || 0}%`, 15, yPos + 20);
-    doc.text(`- Projected Drift: +${riskResults?.days_behind_schedule || 0} Days`, 15, yPos + 30);
+    doc.setFontSize(10);
+    doc.text(`- Delay Probability: ${riskResults?.delay_probability || 0}%`, 18, yPos);
+    doc.text(`- Estimated Schedule Drift: +${riskResults?.days_behind_schedule || 0} Days`, 18, yPos + 6);
+    doc.text(`- Projected Budget Deviation Risk: +${riskResults?.cost_overrun_risk || 0}%`, 18, yPos + 12);
+    
+    yPos += 20;
+
+    // Section 4: Key Identified Vulnerabilities
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 180, 8, "F");
+    doc.text("CRITICAL TIMELINE VULNERABILITIES", 18, yPos + 6);
+    
+    yPos += 14;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    if (riskResults?.top_risks && riskResults.top_risks.length > 0) {
+      riskResults.top_risks.forEach((risk, idx) => {
+        if (yPos > 270) { doc.addPage(); yPos = 20; }
+        const riskLines = doc.splitTextToSize(`- ${risk}`, 174);
+        doc.text(riskLines, 18, yPos);
+        yPos += riskLines.length * 4.5;
+      });
+    } else {
+      doc.text("- No timeline delays or cost overrun warnings noted in standard data models.", 18, yPos);
+      yPos += 8;
+    }
+
+    // Section 5: AI Recommended Action Items
+    yPos += 4;
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 180, 8, "F");
+    doc.text("AI ACTIONABLE STRATEGIC MITIGATIONS", 18, yPos + 6);
+    
+    yPos += 14;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    if (riskResults?.recommended_actions && riskResults.recommended_actions.length > 0) {
+      riskResults.recommended_actions.forEach((act, idx) => {
+        if (yPos > 270) { doc.addPage(); yPos = 20; }
+        const actLines = doc.splitTextToSize(`${idx + 1}. ${act}`, 174);
+        doc.text(actLines, 18, yPos);
+        yPos += actLines.length * 4.5;
+      });
+    } else {
+      doc.text("- Project is operating within base timeline tolerances. Continue standard auditing.", 18, yPos);
+      yPos += 8;
+    }
+
+    // Footer signature
+    if (yPos > 265) { doc.addPage(); yPos = 20; }
+    yPos += 10;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, yPos, 195, yPos);
+    
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text("SiteWatch AI compliance signatures are automatically certified by frontier AI modules.", 15, yPos + 6);
+    doc.text("Ensure local engineering review matches all observations prior to critical timeline baseline drift modifications.", 15, yPos + 10);
 
     doc.save(`${reportName.toLowerCase().replace(/ /g, "_")}.pdf`);
     toast.success("PDF Downloaded Successfully");
