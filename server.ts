@@ -202,6 +202,92 @@ async function startServer() {
     }
   });
 
+  // 4. Analyze PDF Report (Unified Agent)
+  app.post("/api/analyze-pdf-report", async (req, res) => {
+    try {
+      const { pdfText } = req.body;
+      if (!pdfText) return res.status(400).json({ error: "No PDF text provided" });
+
+      const prompt = `
+        You are the ultimate Construction Site AI auditor. You have been given the full text content extracted from a project PDF document (daily report, audit, design document, or schedule).
+        
+        Analyze this text carefully and extract:
+        1. All safety violations, safety hazards, or regulatory compliance issues mentioned or implied.
+        2. Overall progress of the construction site.
+        3. Overall safety score (0-100).
+        4. Summary of the site status.
+        5. Timeline risks, days behind schedule, cost overrun risk, top risk factors, and recommended actions.
+        
+        Document Text:
+        ${pdfText}
+      `;
+
+      const response = await openai.chat.completions.create({
+        model: "gemini-3.1-flash-lite",
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "pdf_report_analysis",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                visionResults: {
+                  type: "object",
+                  properties: {
+                    violations: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          type: { type: "string" },
+                          severity: { type: "string" },
+                          location: { type: "string" },
+                          recommendation: { type: "string" }
+                        },
+                        required: ["type", "severity", "location", "recommendation"],
+                        additionalProperties: false
+                      }
+                    },
+                    progress_estimate: { type: "number" },
+                    overall_safety_score: { type: "number" },
+                    summary: { type: "string" },
+                    confidence: { type: "number" }
+                  },
+                  required: ["violations", "progress_estimate", "overall_safety_score", "summary", "confidence"],
+                  additionalProperties: false
+                },
+                riskResults: {
+                  type: "object",
+                  properties: {
+                    delay_probability: { type: "number" },
+                    days_behind_schedule: { type: "number" },
+                    cost_overrun_risk: { type: "number" },
+                    top_risks: { type: "array", items: { type: "string" } },
+                    recommended_actions: { type: "array", items: { type: "string" } }
+                  },
+                  required: ["delay_probability", "days_behind_schedule", "cost_overrun_risk", "top_risks", "recommended_actions"],
+                  additionalProperties: false
+                }
+              },
+              required: ["visionResults", "riskResults"],
+              additionalProperties: false
+            }
+          }
+        }
+      });
+
+      const responseText = response.choices[0]?.message?.content || "{}";
+      res.json(JSON.parse(responseText));
+    } catch (error: any) {
+      console.error("PDF Report Analysis Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

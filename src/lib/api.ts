@@ -37,3 +37,13 @@ export async function parsePDF(pdfBase64: string) {
   if (!response.ok) throw new Error("Failed to parse PDF");
   return response.json();
 }
+
+export async function analyzePDFReport(pdfText: string) {
+  const response = await fetch("/api/analyze-pdf-report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pdfText }),
+  });
+  if (!response.ok) throw new Error("Failed to analyze PDF report");
+  return response.json();
+}

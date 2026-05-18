@@ -19,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { analyzePhoto, analyzeRisk, parsePDF } from "@/lib/api";
+import { analyzePhoto, analyzeRisk, parsePDF, analyzePDFReport } from "@/lib/api";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
 import { useProject } from "@/context/ProjectContext";
@@ -146,9 +146,9 @@ export default function UploadCenter() {
         setVisionResults(result); // Update global state
       }
 
-      // 2. Parse PDFs and Analyze Risks
+      // 2. Parse PDFs and Analyze Risks (Unified PDF Analysis)
       if (pdfFiles.length > 0) {
-        toast.info("Extracting and Analyzing PDF Project Document...");
+        toast.info("Extracting PDF Project Document Text...");
         const f = pdfFiles[0];
         setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: "processing" } : item));
         
@@ -161,11 +161,12 @@ export default function UploadCenter() {
         const parseResult = await parsePDF(base64);
         const pdfText = parseResult.text;
         
-        toast.info("Running AI Analysis on Extracted Document Content...");
-        const riskResult = await analyzeRisk(pdfText, visionSummary);
+        toast.info("Running Unified AI Audit on Extracted Document Content...");
+        const unifiedResult = await analyzePDFReport(pdfText);
         
-        setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: "completed", analysis: riskResult } : item));
-        setRiskResults(riskResult); // Update global state
+        setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: "completed", analysis: unifiedResult.riskResults } : item));
+        setRiskResults(unifiedResult.riskResults); // Update global state
+        setVisionResults(unifiedResult.visionResults); // Update global state (Populates violations list, safety score, progress, summary)
         setProjectContext(pdfText); // Save text for context
       }
 
