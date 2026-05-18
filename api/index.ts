@@ -132,8 +132,10 @@ app.post("/api/analyze-risk", async (req, res) => {
       1. Delay Probability (0-100 percentage).
       2. Days Behind Schedule (number).
       3. Cost Overrun Risk (0-100 percentage).
-      4. Top Risk Factors (array of strings).
-      5. Recommended Actions (array of strings).
+      4. A predicted 'target_end_date' (string, e.g. "Oct 24, 2026" or calculated based on timeline drift).
+      5. A predicted 'risk_status' (string, e.g. "On Track", "Slight Delay", "Critical Delay", "High Risk").
+      6. For 'top_risks', return an array of objects containing 'factor' (string), 'severity' ("HIGH" or "MEDIUM" or "LOW"), and 'probability' (number, 0-100).
+      7. Recommended Actions (array of strings).
     `;
 
     const response = await openai.chat.completions.create({
@@ -152,10 +154,32 @@ app.post("/api/analyze-risk", async (req, res) => {
               delay_probability: { type: "number" },
               days_behind_schedule: { type: "number" },
               cost_overrun_risk: { type: "number" },
-              top_risks: { type: "array", items: { type: "string" } },
+              target_end_date: { type: "string" },
+              risk_status: { type: "string" },
+              top_risks: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    factor: { type: "string" },
+                    severity: { type: "string" },
+                    probability: { type: "number" }
+                  },
+                  required: ["factor", "severity", "probability"],
+                  additionalProperties: false
+                }
+              },
               recommended_actions: { type: "array", items: { type: "string" } }
             },
-            required: ["delay_probability", "days_behind_schedule", "cost_overrun_risk", "top_risks", "recommended_actions"],
+            required: [
+              "delay_probability",
+              "days_behind_schedule",
+              "cost_overrun_risk",
+              "target_end_date",
+              "risk_status",
+              "top_risks",
+              "recommended_actions"
+            ],
             additionalProperties: false
           }
         }
@@ -243,6 +267,9 @@ app.post("/api/analyze-pdf-report", async (req, res) => {
       3. Overall safety score (0-100).
       4. Summary of the site status.
       5. Timeline risks, days behind schedule, cost overrun risk, top risk factors, and recommended actions.
+      6. Determine a predicted 'target_end_date' (string, e.g. "Oct 24, 2026" or calculated based on schedule information).
+      7. Determine a predicted 'risk_status' (string, e.g. "On Track", "Slight Delay", "Critical Delay", "High Risk").
+      8. For 'top_risks', return an array of objects containing 'factor' (string), 'severity' ("HIGH" or "MEDIUM" or "LOW"), and 'probability' (number, 0-100).
       
       Document Text:
       ${pdfText}
@@ -292,10 +319,32 @@ app.post("/api/analyze-pdf-report", async (req, res) => {
                   delay_probability: { type: "number" },
                   days_behind_schedule: { type: "number" },
                   cost_overrun_risk: { type: "number" },
-                  top_risks: { type: "array", items: { type: "string" } },
+                  target_end_date: { type: "string" },
+                  risk_status: { type: "string" },
+                  top_risks: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        factor: { type: "string" },
+                        severity: { type: "string" },
+                        probability: { type: "number" }
+                      },
+                      required: ["factor", "severity", "probability"],
+                      additionalProperties: false
+                    }
+                  },
                   recommended_actions: { type: "array", items: { type: "string" } }
                 },
-                required: ["delay_probability", "days_behind_schedule", "cost_overrun_risk", "top_risks", "recommended_actions"],
+                required: [
+                  "delay_probability",
+                  "days_behind_schedule",
+                  "cost_overrun_risk",
+                  "target_end_date",
+                  "risk_status",
+                  "top_risks",
+                  "recommended_actions"
+                ],
                 additionalProperties: false
               }
             },

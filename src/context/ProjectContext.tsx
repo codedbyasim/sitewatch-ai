@@ -15,12 +15,20 @@ interface VisionResult {
   confidence: number;
 }
 
+interface RiskFactor {
+  factor: string;
+  severity: string;
+  probability: number;
+}
+
 interface RiskResult {
   delay_probability: number;
   days_behind_schedule: number;
   cost_overrun_risk: number;
-  top_risks: string[];
+  top_risks: RiskFactor[];
   recommended_actions: string[];
+  target_end_date: string;
+  risk_status: string;
 }
 
 interface ProjectContextType {

@@ -129,9 +129,20 @@ export default function RiskAnalytics() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {riskResults.top_risks.map((risk, i) => (
-              <RiskRow key={i} severity={i === 0 ? "HIGH" : "MEDIUM"} factor={risk} impact="Direct" prob={`${riskResults.delay_probability}%`} />
-            ))}
+            {riskResults.top_risks.map((risk, i) => {
+              const severity = typeof risk === "string" ? (i === 0 ? "HIGH" : "MEDIUM") : risk.severity;
+              const factor = typeof risk === "string" ? risk : risk.factor;
+              const prob = typeof risk === "string" ? `${riskResults.delay_probability}%` : `${risk.probability}%`;
+              return (
+                <RiskRow 
+                  key={i} 
+                  severity={severity} 
+                  factor={factor} 
+                  impact="Direct" 
+                  prob={prob} 
+                />
+              );
+            })}
           </div>
         </CardContent>
       </Card>

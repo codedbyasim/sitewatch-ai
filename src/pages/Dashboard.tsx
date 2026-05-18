@@ -207,15 +207,19 @@ export default function Dashboard() {
               </div>
               <Progress value={visionResults?.progress_estimate || 0} className="h-4 bg-white/5 rounded-full" />
             </div>
-            <div className="grid grid-cols-2 gap-8 pt-4">
+            <div className="grid grid-cols-2 gap-8 pt-4 text-left">
               <div className="flex flex-col">
                 <span className="text-xs text-foreground/40 uppercase tracking-widest mb-1">Target End Date</span>
-                <span className="text-lg font-bold">Oct 24, 2026</span>
+                <span className="text-lg font-bold">{riskResults?.target_end_date || "Oct 24, 2026"}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-xs text-foreground/40 uppercase tracking-widest mb-1">Risk Status</span>
-                <span className={cn("text-lg font-bold", delayProb > 50 ? "text-red-500" : "text-green-500")}>
-                  {delayProb > 50 ? "Critical Delay" : "On Track"}
+                <span className={cn("text-lg font-bold", 
+                  (riskResults?.risk_status?.toLowerCase().includes("delay") || riskResults?.risk_status?.toLowerCase().includes("risk") || delayProb > 50) 
+                    ? "text-red-500" 
+                    : "text-green-500"
+                )}>
+                  {riskResults?.risk_status || (delayProb > 50 ? "Critical Delay" : "On Track")}
                 </span>
               </div>
             </div>
